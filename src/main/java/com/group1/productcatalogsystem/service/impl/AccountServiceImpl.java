@@ -29,20 +29,20 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-
-        boolean isActive = account.getIsActive() == null || account.getIsActive();
-        AccountRole role = account.getRole() != null ? account.getRole() : AccountRole.CUSTOMER;
-
+//        Account account = accountRepository.findByUsername(username)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+//
+//        boolean isActive = account.getIsActive() == null || account.getIsActive();
+//        AccountRole role = account.getRole() != null ? account.getRole() : AccountRole.CUSTOMER;
+        String roleName = "ADMIN";
         return new User(
-                account.getUsername(),
-                account.getPassword(),
-                isActive,   // enabled
+                username,
+                "12345678",
+                true,   // enabled, tạm thôi
                 true,       // accountNonExpired
                 true,       // credentialsNonExpired
                 true,       // accountNonLocked
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleName))
         );
     }
 
