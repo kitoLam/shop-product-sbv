@@ -67,3 +67,14 @@ UsernamePasswordAuthenticationFilter  ← thấy SecurityContext đã có auth
    │                                    → bỏ qua, không xử lý nữa
    ▼
 Controller ✅
+
+* Note 6:
+Lí do có DaoAuthenticationProvider
+authenticationManager.authenticate(token)
+        │
+        ▼
+DaoAuthenticationProvider        ← bạn đang hỏi chỗ này
+        │
+        ├── UserDetailsService.loadUserByUsername()  → lấy user từ DB
+        │
+        └── PasswordEncoder.matches()               → so sánh password
