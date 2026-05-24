@@ -1,0 +1,55 @@
+* Note 1:
+UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+userDetails.getUsername();        // → số điện thoại, username,...
+userDetails.getPassword();        // → password đã được BCrypt hash
+userDetails.getAuthorities();     // → danh sách roles ["ROLE_USER", "ROLE_ADMIN"...]
+userDetails.isEnabled();          // → true/false (tài khoản có bị khóa không)
+userDetails.isAccountNonExpired();    // → true
+userDetails.isAccountNonLocked();     // → true
+userDetails.isCredentialsNonExpired();// → true
+
+
+* Note 2:
+Authentication contains:
+├── getPrincipal()    → User object (có id, phone, roles...)
+├── getAuthorities()  → ["ROLE_USER", "ROLE_ADMIN"...]
+├── isAuthenticated() → true
+└── getCredentials()  → password (đã xóa sau auth)
+
+* Note 3:
+UsernamePasswordAuthenticationToken vs AuthenticationThực ra đây là quan hệ cha-con, không phải 2 thứ khác nhau hoàn toàn.
+Authentication  (interface)
+    │
+    └── AbstractAuthenticationToken  (abstract class)
+            │
+            └── UsernamePasswordAuthenticationToken  (concrete class)
+
+Sample flow:
+// ① FE gửi username/password lên
+// ② Controller tạo token CHƯA xác thực,던g vào authenticationManager
+Authentication request = new UsernamePasswordAuthenticationToken(username, password);
+//   └── authenticated = false
+//   └── principal = "john" (String)
+//   └── credentials = "123456"
+
+// ③ authenticationManager.authenticate() xử lý bên trong:
+//    - Gọi UserDetailsService.loadUserByUsername()
+//    - Check password
+//    - Nếu OK → trả về token ĐÃ xác thực
+Authentication result = authenticationManager.authenticate(request);
+//   └── authenticated = true
+//   └── principal = UserDetails object (đầy đủ thông tin)
+//   └── credentials = null (xóa đi vì không cần nữa)
+//   └── authorities = [ROLE_USER, ROLE_ADMIN...]
+
+// ④ JwtAuthFilter sau này tạo thẳng token ĐÃ xác thực (bỏ qua bước authenticate)
+Authentication fromJwt = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+//   └── authenticated = true (vì dùng constructor 3 tham số)
+//   └── JWT đã validate rồi nên không cần qua authenticationManager nữa
+
+Constructor 3 tham số này tự động set authenticated = true bên trong. Khác với constructor 2 tham số (dùng lúc truyền vào authenticationManager.authenticate()) thì authenticated = false.
+
+authenticationToken.setDetails(
+    new WebAuthenticationDetailsSource().buildDetails(request)
+);
+Dùng để gắn thêm thông tin req của user như ip, Session ID

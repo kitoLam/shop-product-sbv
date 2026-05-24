@@ -27,7 +27,6 @@ public class AuthController {
     public ResponseEntity<String> createProduct(@RequestBody Map<String,String> request) {
         String username = request.get("username");
         String password = request.get("password");
-        // giả sử username và password ok
         System.out.println("username:"+username);
         System.out.println("password:"+password);
         Authentication auth = authenticationManager.authenticate(
