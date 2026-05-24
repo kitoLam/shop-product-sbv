@@ -1,9 +1,11 @@
 package com.group1.productcatalogsystem.service.impl;
 
 import com.group1.productcatalogsystem.dto.request.AccountRequest;
+import com.group1.productcatalogsystem.dto.request.RegisterRequest;
 import com.group1.productcatalogsystem.dto.response.AccountResponse;
 import com.group1.productcatalogsystem.entity.Account;
 import com.group1.productcatalogsystem.entity.AccountRole;
+import com.group1.productcatalogsystem.exception.BadRequestException;
 import com.group1.productcatalogsystem.exception.ResourceNotFoundException;
 import com.group1.productcatalogsystem.mapper.AccountMapper;
 import com.group1.productcatalogsystem.repository.AccountRepository;
@@ -14,7 +16,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -26,24 +28,33 @@ import java.util.stream.Collectors;
 public class AccountServiceImpl implements AccountService, UserDetailsService {
 
     private final AccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        Account account = accountRepository.findByUsername(username)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-//
-//        boolean isActive = account.getIsActive() == null || account.getIsActive();
-//        AccountRole role = account.getRole() != null ? account.getRole() : AccountRole.CUSTOMER;
-        String roleName = "ADMIN";
-        return new User(
-                username,
-                "12345678",
-                true,   // enabled, tạm thôi
-                true,       // accountNonExpired
-                true,       // credentialsNonExpired
-                true,       // accountNonLocked
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleName))
-        );
+        return accountRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
+
+    @Override
+    public AccountResponse register(RegisterRequest request) {
+        if (accountRepository.existsByUsername(request.getUsername())) {
+            throw new BadRequestException("Username is already taken");
+        }
+        if (accountRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("Email is already taken");
+        }
+
+        Account account = Account.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(AccountRole.CUSTOMER)
+                .isActive(true)
+                .build();
+
+        Account saved = accountRepository.save(account);
+        return AccountMapper.toResponse(saved);
     }
 
 

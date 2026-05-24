@@ -26,11 +26,6 @@ import static org.springframework.http.HttpMethod.POST;
 public class SecurityConfig {
     @Autowired
     private JwtTokenFilter  jwtTokenFilter;
-    @SuppressWarnings("deprecation")
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
-    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
@@ -48,7 +43,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(GET, "/api/v1/products/**").permitAll()
                         .requestMatchers(GET, "/api/v1/categories/**").permitAll()
-                        .requestMatchers(POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(POST, "/api/v1/auth/login", "/api/v1/auth/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
