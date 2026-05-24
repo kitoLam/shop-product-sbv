@@ -18,10 +18,10 @@ import java.util.Date;
 public class JwtTokenUtil {
     private int expiresIn = 86400000;
 
-    private String jwtSecret = "super_secret_key";
+    private String jwtSecret = "super_secret_key_must_be_at_least_32chars!";
     // hash secret
     private SecretKey getSigningKey() {
-        return Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
     // gen token
     public String generateToken(Authentication authentication){

@@ -53,3 +53,17 @@ authenticationToken.setDetails(
     new WebAuthenticationDetailsSource().buildDetails(request)
 );
 Dùng để gắn thêm thông tin req của user như ip, Session ID
+
+* Note 5:
+http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+Tại sao cần addd jwtTokenFilter trước UsernamePassAuthenticationFilter ?
+Request có Bearer token
+   │
+   ▼
+JwtAuthFilter  ← chạy trước, validate token, set SecurityContext
+   │
+   ▼
+UsernamePasswordAuthenticationFilter  ← thấy SecurityContext đã có auth
+   │                                    → bỏ qua, không xử lý nữa
+   ▼
+Controller ✅

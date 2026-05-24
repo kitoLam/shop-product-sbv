@@ -2,6 +2,7 @@ package com.group1.productcatalogsystem.controller;
 
 import com.group1.productcatalogsystem.dto.request.ProductRequest;
 import com.group1.productcatalogsystem.dto.response.ProductResponse;
+import com.group1.productcatalogsystem.entity.Account;
 import com.group1.productcatalogsystem.util.JwtTokenUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -35,5 +34,11 @@ public class AuthController {
         );
         String token = jwtTokenUtil.generateToken(auth);
         return ResponseEntity.ok(token);
+    }
+    @GetMapping("/me")
+    public ResponseEntity<String> getCurrentUser(@AuthenticationPrincipal Account user) {
+        System.out.println("id::" + user.getId());
+        System.out.println("username::" + user.getUsername());
+        return ResponseEntity.ok("I can see me");
     }
 }

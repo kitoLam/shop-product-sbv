@@ -33,18 +33,27 @@ public class JwtTokenFilter extends OncePerRequestFilter{
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if(isBypassToken(request)){
             filterChain.doFilter(request,response);
+            System.out.println("Loix 1");
             return;
         }
         // B1: Lấy token ra trc:
         String authorizationHeader = request.getHeader("Authorization");
+        System.out.println("token:"+authorizationHeader);
+
         if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")){
-            throw new UnAuthenticatedRequestException("Authorization header is invalid");
+            System.out.println("Loix 2");
+
+            filterChain.doFilter(request, response);
+            return;
         }
         String token = authorizationHeader.substring(7);
         try {
+            System.out.println("pre::");
             String username = jwtTokenUtil.getUsernameFromToken(token);
+            System.out.println("post::");
             if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                System.out.println(userDetails.getUsername());
                 // ta đã phải sử lí việc bắt exception tk này ko có trg db ở UserDetailService rồi nen userDetails se khong bao gio null
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, // chứa thông tin ai đang tương tác
@@ -57,6 +66,8 @@ public class JwtTokenFilter extends OncePerRequestFilter{
         } catch (ExpiredJwtException expiredJwtException) {
             throw new UnAuthenticatedRequestException("Token is expired");
         } catch (Exception e) {
+            System.out.println("JWT error type: " + e.getClass().getName());
+            System.out.println("JWT error message: " + e.getMessage());
             throw new UnAuthenticatedRequestException("JWT error");
         }
     }
